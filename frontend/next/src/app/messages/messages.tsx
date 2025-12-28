@@ -320,7 +320,7 @@ export function Messages({ targetNickname }: { targetNickname?: string }) {
                             : "bg-white text-gray-800 border border-gray-200"
                             }`}
                         >
-                          <p className="text-sm leading-relaxed">{msg.text}</p>
+                          <p className="text-sm leading-relaxed whitespace-pre-wrap overflow-y-auto max-h-[300px] break-words">{msg.text}</p>
                           <div className={`text-xs mt-2 ${msg.from === "me" ? "text-blue-100" : "text-gray-500"}`}>
                             {msg.time}
                           </div>
@@ -348,6 +348,7 @@ export function Messages({ targetNickname }: { targetNickname?: string }) {
                           value={input}
                           onChange={(e) => setInput(e.target.value)}
                           className="w-full px-4 py-3 border border-gray-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          maxLength={1000}
                         />
                       </div>
 

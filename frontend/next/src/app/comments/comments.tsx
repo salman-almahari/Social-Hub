@@ -327,6 +327,7 @@ export function CommentsSection() {
                   className="w-full p-4 border border-gray-300 rounded-3xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none transition-all"
                   rows={4}
                   disabled={submitting}
+                  maxLength={500}
                 />
                 <div className="flex justify-between text-sm text-gray-500 mt-2">
                   <span>Express yourself</span>
@@ -429,7 +430,7 @@ export function CommentsSection() {
               {comments.map((comment, index) => (
                 <div 
                   key={comment.id} 
-                  className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 hover:shadow-xl transition-shadow"
+                  className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 hover:shadow-xl transition-shadow overflow-hidden"
                 >
                   <div className="flex items-start gap-4">
                     {/* User Avatar */}
@@ -445,11 +446,11 @@ export function CommentsSection() {
                       )}
                     </div>
                     
-                    <div className="flex-1">
+                    <div className="flex-1 min-w-0">
                       {/* Comment Header */}
                       <div className="flex items-center justify-between mb-3">
-                        <div>
-                          <h4 className="font-semibold text-gray-900">
+                        <div className="min-w-0 flex-1">
+                          <h4 className="font-semibold text-gray-900 break-words overflow-x-auto">
                             {comment.nickname || `User ${comment.user_id}`}
                           </h4>
                           <div className="flex items-center gap-1 text-sm text-gray-500">
@@ -461,7 +462,7 @@ export function CommentsSection() {
                       
                       {/* Comment Content */}
                       {comment.content && (
-                        <p className="text-gray-700 leading-relaxed mb-3">
+                        <p className="text-gray-700 leading-relaxed mb-3 whitespace-pre-wrap overflow-y-auto max-h-[150px] break-words">
                           {comment.content}
                         </p>
                       )}

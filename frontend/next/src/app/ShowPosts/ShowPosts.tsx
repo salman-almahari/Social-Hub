@@ -66,10 +66,6 @@ export function ShowPosts() {
     }
   };
 
-  const truncateContent = (content: string, maxLength: number = 200) => {
-    if (content.length <= maxLength) return content;
-    return content.substring(0, maxLength) + '...';
-  };
 
   const getPrivacyIcon = (level?: string) => {
     switch (level) {
@@ -202,7 +198,7 @@ export function ShowPosts() {
                             {formatDateOnly(post.created_at)}
                           </div>
                         </div>
-                        <h2 className="text-2xl font-bold text-gray-900 mb-2 leading-tight">
+                        <h2 className="text-2xl font-bold text-gray-900 mb-2 leading-tight break-words overflow-x-auto">
                           {post.title}
                         </h2>
                         <div className="flex items-center gap-4 text-sm text-gray-500">
@@ -222,7 +218,7 @@ export function ShowPosts() {
                                 {post.category.slice(0, 3).map((cat, catIndex) => (
                                   <span 
                                     key={catIndex}
-                                    className="bg-blue-100 text-blue-700 px-2 py-1 rounded-full text-xs font-medium"
+                                    className="bg-blue-100 text-blue-700 px-2 py-1 rounded-full text-xs font-medium whitespace-pre-wrap overflow-x-auto max-w-full break-words"
                                   >
                                     {cat}
                                   </span>
@@ -241,14 +237,9 @@ export function ShowPosts() {
 
                     {/* Post Content */}
                     <div className="mb-4">
-                      <p className="text-gray-700 leading-relaxed text-lg">
-                        {truncateContent(post.content)}
+                      <p className="text-gray-700 leading-relaxed text-lg whitespace-pre-wrap overflow-y-auto max-h-[400px] break-words">
+                        {post.content}
                       </p>
-                      {post.content.length > 200 && (
-                        <button className="text-blue-600 hover:text-blue-700 font-medium text-sm mt-2">
-                          Read more
-                        </button>
-                      )}
                     </div>
                   </div>
 

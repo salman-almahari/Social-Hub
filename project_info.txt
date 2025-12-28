@@ -1,0 +1,1809 @@
+================================================================================
+                    SOCIAL NETWORK PROJECT - COMPREHENSIVE DOCUMENTATION
+================================================================================
+
+This document provides a detailed overview of the Social Network project,
+including architecture, implementation details, technologies used, and all
+features. This documentation is intended for academic thesis purposes.
+
+================================================================================
+1. PROJECT OVERVIEW
+================================================================================
+
+1.1 PROJECT OBJECTIVE
+---------------------
+The Social Network is a Facebook-like social networking platform that enables
+users to connect, share content, and interact with each other. The project
+implements a full-stack web application with real-time communication capabilities,
+comprehensive user management, and advanced privacy controls.
+
+1.2 CORE FEATURES
+-----------------
+- User Authentication and Registration
+- User Profiles (Public/Private)
+- Follow/Unfollow System with Request Management
+- Posts with Multiple Privacy Levels
+- Comments on Posts
+- Groups with Invitations and Join Requests
+- Group Events with RSVP Functionality
+- Real-time Private Messaging (WebSocket)
+- Real-time Group Chat (WebSocket)
+- Comprehensive Notification System
+- Image Upload and Management (JPEG, PNG, GIF)
+
+1.3 PROJECT STRUCTURE
+---------------------
+The project follows a clear separation between frontend and backend:
+
+Backend: Go-based RESTful API server with WebSocket support
+Frontend: Next.js 15 application with TypeScript
+Database: SQLite with migration system
+Containerization: Docker with docker-compose
+
+================================================================================
+2. ARCHITECTURE AND DESIGN
+================================================================================
+
+2.1 SYSTEM ARCHITECTURE
+-----------------------
+The application follows a three-tier architecture:
+
+┌─────────────────────────────────────────────────────────────┐
+│                    CLIENT LAYER (Frontend)                  │
+│  Next.js 15 Application - React Components, TypeScript       │
+│  WebSocket Client for Real-time Communication               │
+└──────────────────────┬──────────────────────────────────────┘
+                      │
+                      │ HTTP/REST API
+                      │ WebSocket Protocol
+                      │
+┌──────────────────────▼──────────────────────────────────────┐
+│                 APPLICATION LAYER (Backend)                  │
+│  Go HTTP Server - Handlers, Middleware, WebSocket Hub        │
+│  Session Management, Authentication, Business Logic          │
+└──────────────────────┬──────────────────────────────────────┘
+                      │
+                      │ SQL Queries
+                      │
+┌──────────────────────▼──────────────────────────────────────┐
+│                    DATA LAYER (Database)                    │
+│  SQLite Database - Tables, Relationships, Migrations        │
+│  File System - Image Storage (uploads directory)             │
+└─────────────────────────────────────────────────────────────┘
+
+2.2 DESIGN PATTERNS
+-------------------
+- **MVC Pattern**: Clear separation between handlers (controllers), database
+  (models), and frontend components (views)
+- **Middleware Pattern**: Authentication middleware for protected routes
+- **Repository Pattern**: Database operations abstracted in database package
+- **Context Pattern**: React Context API for state management in frontend
+- **Observer Pattern**: WebSocket connections for real-time updates
+
+2.3 COMMUNICATION PROTOCOLS
+---------------------------
+- **HTTP/REST**: Standard RESTful API for CRUD operations
+- **WebSocket**: Real-time bidirectional communication for:
+  * Private chat messages
+  * Group chat messages
+  * Real-time notifications
+  * Follow status updates
+  * User list updates
+
+================================================================================
+3. TECHNOLOGY STACK
+================================================================================
+
+3.1 BACKEND TECHNOLOGIES
+------------------------
+- **Language**: Go 1.23.4
+- **Web Framework**: Standard net/http package
+- **Database**: SQLite3 (github.com/mattn/go-sqlite3)
+- **Migrations**: golang-migrate/migrate v4
+- **WebSocket**: Gorilla WebSocket (github.com/gorilla/websocket)
+- **Sessions**: Custom session management with cookies
+- **Password Hashing**: bcrypt (golang.org/x/crypto/bcrypt)
+- **UUID Generation**: google/uuid
+
+3.2 FRONTEND TECHNOLOGIES
+-------------------------
+- **Framework**: Next.js 15.1.6
+- **Language**: TypeScript 5
+- **UI Library**: React 19.0.0
+- **Styling**: Tailwind CSS 3.4.1
+- **UI Components**: 
+  * Radix UI (react-slot, react-toast)
+  * Lucide React (icons)
+  * Sonner (toast notifications)
+- **State Management**: React Context API
+- **WebSocket Client**: Native WebSocket API
+- **Form Handling**: React hooks and controlled components
+
+3.3 DEVOPS AND DEPLOYMENT
+-------------------------
+- **Containerization**: Docker
+- **Orchestration**: Docker Compose
+- **Backend Image**: Alpine Linux with Go 1.23
+- **Frontend Image**: Node.js 18 Alpine
+- **Ports**: 
+  * Backend: 8080
+  * Frontend: 3001 (mapped from 3000)
+
+================================================================================
+4. BACKEND IMPLEMENTATION DETAILS
+================================================================================
+
+4.1 PROJECT STRUCTURE
+---------------------
+backend/
+├── main.go                    # Application entry point, route definitions
+├── go.mod                     # Go module dependencies
+├── go.sum                     # Dependency checksums
+├── Dockerfile                 # Backend container configuration
+├── database/                  # Database operations package
+│   ├── database.go           # DB initialization, migrations, group tables
+│   ├── InsertUser.go         # User registration functions
+│   ├── SelectUser.go         # User query functions
+│   ├── update_user.go        # User profile update functions
+│   ├── user_profile.go       # Profile retrieval functions
+│   ├── post.go               # Post CRUD operations
+│   ├── followers.go          # Follow relationship queries
+│   └── Messages.go           # Message storage and retrieval
+├── handlers/                 # HTTP request handlers
+│   ├── structs.go            # Data structure definitions
+│   ├── RegisterHandler.go    # User registration endpoint
+│   ├── login.go              # Login handler (legacy)
+│   ├── profile.go            # Profile management
+│   ├── public_profile.go    # Public profile viewing
+│   ├── InsertPost.go         # Post creation
+│   ├── post_upload.go        # Post image upload
+│   ├── comments.go           # Comment operations
+│   ├── post_privacy.go       # Post privacy management
+│   ├── followers_list.go     # Follower/following lists
+│   ├── websocket.go          # Unified WebSocket handler
+│   ├── chat.go               # Chat history endpoints
+│   ├── messages.go           # Message management
+│   ├── notifications.go      # Notification system
+│   ├── group_management.go   # Group CRUD operations
+│   ├── group_posts.go        # Group post operations
+│   ├── group_messaging.go    # Group chat endpoints
+│   ├── group_events.go       # Event management
+│   ├── group_notifications.go # Group-specific notifications
+│   ├── event_notifications.go # Event notifications
+│   └── all_requests.go       # Request aggregation
+├── sessions/                 # Session management
+│   ├── session.go            # Session store implementation
+│   └── auth.go               # Authentication handlers
+├── followers/                # Follow system logic
+│   ├── follow.go             # Follow operations
+│   ├── follow_status.go      # Follow status queries
+│   ├── follow_requests.go    # Request management
+│   └── followHandlers.go     # Follow HTTP handlers
+├── notify/                   # Notification utilities
+│   └── notify.go             # Broadcast functions
+├── models/                   # Data models
+│   └── user.go               # User model definitions
+└── migrations/               # Database migrations
+    ├── 000001_create_tables.up.sql
+    └── 000001_create_tables.down.sql
+
+4.2 MAIN SERVER (main.go)
+--------------------------
+The main.go file serves as the application entry point and route configuration:
+
+**Key Responsibilities:**
+- Database initialization with automatic migration
+- Session store creation
+- WebSocket notification system initialization
+- Route registration for all HTTP endpoints
+- CORS middleware configuration
+
+**Route Categories:**
+1. **Authentication Routes:**
+   - POST /login - User login
+   - POST /register - User registration
+   - POST /logout - Session termination
+   - GET /auth/status - Authentication status check
+
+2. **User Profile Routes:**
+   - GET /profile - Current user profile
+   - GET /user/{nickname} - Public profile view
+   - POST /update-profile - Profile update
+   - POST /upload-avatar - Avatar upload
+   - GET /uploads/ - Image serving
+
+3. **Post Routes:**
+   - POST /createpost - Create new post
+   - GET /posts - Retrieve posts (with privacy filtering)
+   - POST /upload-post-image - Post image upload
+   - GET /uploads/posts/ - Post image serving
+
+4. **Comment Routes:**
+   - GET /comments - Get post comments
+   - POST /comments/add - Add comment
+   - POST /upload-comment-image - Comment image upload
+
+5. **Post Privacy Routes:**
+   - POST /post-permissions/add - Add user to private post
+   - POST /post-permissions/remove - Remove user from private post
+   - GET /post-permissions/get - Get post permissions
+   - POST /post-permissions/update - Update post permissions
+   - GET /post-permissions/users - Get users for private post selection
+   - GET /post-permissions/check-access - Check post access
+
+6. **Follow Routes:**
+   - POST /follow - Send follow request
+   - POST /unfollow - Unfollow user
+   - POST /accept - Accept follow request
+   - POST /decline - Decline follow request
+   - GET /follow-status - Get follow status
+   - GET /followers/{nickname} - Get user's followers
+   - GET /following/{nickname} - Get user's following list
+   - GET /followers/me - Get current user's followers
+
+7. **Request Routes:**
+   - GET /requests - Get all pending requests (follow, group invites, etc.)
+
+8. **Message Routes:**
+   - GET /messages - Get message history
+   - POST /messages/store - Store message (legacy)
+   - GET /messages/unread/count - Get unread message count
+   - GET /messages/unread/by-sender - Get unread count by sender
+   - POST /messages/mark-read - Mark messages as read
+   - GET /chat/history - Chat history
+   - GET /chat/recent-users - Recent chat users
+   - GET /chat/can-access - Check chat access permission
+
+9. **Group Routes:**
+   - POST /creategroup - Create new group
+   - GET /groups - Get all groups with membership status
+   - GET /group-members - Get group members
+   - POST /request-join-group - Request to join group
+   - POST /approve-group-request - Approve join request
+   - POST /reject-group-request - Reject join request
+   - GET /group-join-requests - List join requests
+   - POST /group-invite-requests - Invite user to group
+   - POST /accept-group-invite - Accept group invitation
+   - POST /reject-group-invite - Reject group invitation
+
+10. **Group Post Routes:**
+    - GET /group-posts - Get group posts
+    - POST /create-group-post - Create group post
+    - POST /like-group-post - Like group post
+    - DELETE /delete-group-post/{id} - Delete group post
+    - POST /upload-group-post-image - Upload group post image
+
+11. **Group Comment Routes:**
+    - GET /group-post-comments - Get group post comments
+    - POST /add-group-post-comment - Add comment to group post
+    - DELETE /delete-group-post-comment/{id} - Delete comment
+
+12. **Group Chat Routes:**
+    - GET /group-messages - Get group chat history
+
+13. **Group Event Routes:**
+    - GET /group-events - Get group events
+    - POST /create-group-event - Create event
+    - POST /respond-to-event - RSVP to event
+    - GET /all-group-events - Get all events across groups
+
+14. **Notification Routes:**
+    - GET /notifications - Get user notifications
+    - POST /notifications/mark-read - Mark notifications as read
+    - DELETE /notifications/{id} - Delete notification
+    - GET /group-notifications - Get group notifications
+    - POST /mark-group-read - Mark group notifications as read
+    - GET /event-notifications - Get event notifications
+    - POST /mark-event-read - Mark event notifications as read
+
+15. **WebSocket Route:**
+    - GET /ws - Unified WebSocket endpoint
+
+**CORS Configuration:**
+- Allowed Origin: http://localhost:3000
+- Allowed Methods: GET, POST, PUT, DELETE, OPTIONS, PATCH
+- Allowed Headers: Content-Type, Authorization
+- Credentials: Enabled
+- Exposed Headers: Set-Cookie
+
+4.3 DATABASE LAYER
+------------------
+The database package (database/database.go) handles:
+
+**Database Initialization:**
+- SQLite connection establishment
+- Migration system integration using golang-migrate
+- Automatic table creation on startup
+- Group-specific table creation (CreateGroupTables function)
+
+**Migration System:**
+- Uses file://migrations path
+- Automatic migration on application start
+- Up and down migration support
+- Migration files follow naming convention:
+  * {version}_{description}.up.sql
+  * {version}_{description}.down.sql
+
+**Key Database Functions:**
+- InitDB(): Initialize database connection and run migrations
+- CreateGroupTables(): Create all group-related tables
+- Various query functions for users, posts, messages, etc.
+
+4.4 SESSION MANAGEMENT
+----------------------
+**Session Store (sessions/session.go):**
+- Session structure: ID (UUID), UserID, ExpiresAt
+- Session storage in SQLite database
+- Session expiration: 24 hours
+- Cookie-based session identification
+
+**Session Operations:**
+- CreateSession(): Generate new session with UUID
+- GetSession(): Retrieve session by ID
+- DeleteSession(): Remove session
+- DeleteSessionsByUserID(): Remove all user sessions (on new login)
+- GetUserIDFromSession(): Extract user ID from request cookie
+
+**Authentication Handler (sessions/auth.go):**
+- Login(): Validate credentials, create session, set cookie
+- Logout(): Delete session, clear cookie
+- AuthStatus(): Check current authentication status
+- RequireAuth(): Middleware for protected routes
+
+**Cookie Configuration:**
+- Name: "session_id"
+- HttpOnly: true (prevents XSS)
+- Secure: false (true in production with HTTPS)
+- SameSite: LaxMode (CSRF protection)
+- Path: "/"
+- Expiration: 24 hours
+
+4.5 USER REGISTRATION
+---------------------
+**Registration Handler (handlers/RegisterHandler.go):**
+
+**Required Fields:**
+- Email (unique)
+- Password (hashed with bcrypt)
+- First Name
+- Last Name
+- Gender
+- Age (converted from Date of Birth)
+
+**Optional Fields:**
+- Nickname (auto-generated if not provided)
+- Avatar URL
+- About Me
+- Profile Privacy (default: public)
+
+**Registration Process:**
+1. Validate JSON payload
+2. Generate nickname if not provided (firstName + random number)
+3. Check for duplicate email/nickname
+4. Hash password using bcrypt
+5. Insert user into database
+6. Broadcast user list update via WebSocket
+7. Return success response
+
+**Password Security:**
+- Bcrypt hashing with default cost factor
+- Passwords never stored in plain text
+- Password comparison uses bcrypt.CompareHashAndPassword
+
+4.6 POST SYSTEM
+---------------
+**Post Structure:**
+- Post ID (auto-increment)
+- User ID (author)
+- Title (required)
+- Content (required)
+- Category (comma-separated string)
+- Image URL (optional)
+- Privacy Level: public, almost_private, private
+- Created At timestamp
+
+**Privacy Levels:**
+1. **Public**: Visible to all users
+2. **Almost Private**: Visible only to accepted followers
+3. **Private**: Visible only to explicitly selected users
+
+**Post Creation (handlers/InsertPost.go):**
+- Validates user session
+- Validates required fields
+- Validates privacy level
+- Inserts post into database
+- If private, adds selected users to post_permissions table
+
+**Post Retrieval (database/post.go):**
+- FetchPostsWithPrivacy(): Filters posts based on viewer permissions
+- Query logic:
+  * Public posts: Always visible
+  * Almost private: Only if viewer is accepted follower
+  * Private: Only if viewer has explicit permission
+  * Own posts: Always visible
+
+**Post Permissions (handlers/post_privacy.go):**
+- AddPostPermissionHandler(): Add user to private post
+- RemovePostPermissionHandler(): Remove user from private post
+- GetPostPermissionsHandler(): Get allowed users for post
+- UpdatePostPermissionsHandler(): Update permission list
+- CheckPostAccessHandler(): Verify if user can view post
+
+**Image Upload (handlers/post_upload.go):**
+- Accepts JPEG, PNG, GIF, and other image formats
+- Maximum file size: 10MB
+- Unique filename generation using timestamp
+- Stores in uploads/posts/ directory
+- Returns image URL for post association
+
+4.7 COMMENT SYSTEM
+------------------
+**Comment Structure:**
+- Comment ID
+- Post ID (foreign key)
+- User ID (author)
+- Comment text
+- Image URL (optional)
+- Timestamp
+
+**Comment Operations:**
+- GetCommentsHandler(): Retrieve comments for a post
+- InsertCommentHandler(): Add new comment
+- Comment image upload similar to post images
+
+4.8 FOLLOW SYSTEM
+-----------------
+**Follow Relationship States:**
+- **none**: No relationship
+- **pending**: Follow request sent, awaiting approval
+- **accepted**: Follow request approved, following active
+
+**Follow Logic (followers/follow.go):**
+- CreateFollowRequest(): Create pending follow request
+- AcceptFollowRequest(): Change status to accepted
+- DeleteFollowRequest(): Remove pending request
+- DeleteFollow(): Remove follow relationship (unfollow)
+- GetFollowStatus(): Check current follow status
+
+**Follow Handler (followers/followHandlers.go):**
+- FollowHandler(): 
+  * If target is public: Auto-accept
+  * If target is private: Create pending request
+  * Send notification to target user
+- UnfollowHandler(): Remove follow relationship
+- AcceptFollowHandler(): Accept pending request
+- DeclineFollowHandler(): Reject pending request
+
+**Profile Privacy:**
+- Public profiles: Auto-accept follow requests
+- Private profiles: Require approval for follow requests
+- Users can toggle profile privacy in their settings
+
+4.9 GROUP SYSTEM
+----------------
+**Group Structure:**
+- Group ID
+- Group Name
+- Description
+- Created By (user ID)
+- Created At timestamp
+
+**Group Membership:**
+- Group Members table tracks membership
+- Admin flag for group creator
+- Joined At timestamp
+- Unique constraint on (group_id, user_id)
+
+**Group Operations (handlers/group_management.go):**
+- CreateGroupHandler(): Create new group, add creator as admin
+- GetGroupsHandler(): List all groups with membership status
+- GetGroupMembersHandler(): Get members of a group
+
+**Group Join Requests:**
+- RequestJoinGroupHandler(): User requests to join
+- ApproveGroupRequestHandler(): Creator approves request
+- RejectGroupRequestHandler(): Creator rejects request
+- ListGroupJoinRequestsHandler(): List pending requests
+
+**Group Invitations:**
+- GroupInviteRequestsHandler(): Invite user to group
+- AcceptGroupInviteHandler(): User accepts invitation
+- RejectGroupInviteHandler(): User rejects invitation
+- Only group members can invite others
+
+**Group Posts:**
+- Separate table: group_posts
+- Only visible to group members
+- Support for images, categories
+- Like system for group posts
+- Comments on group posts
+
+**Group Chat:**
+- Real-time messaging via WebSocket
+- Messages stored in group_messages table
+- Only group members can send/receive
+- Unread count tracking per user
+
+**Group Events:**
+- Event structure: Title, Description, Event Time
+- RSVP options: "going", "not_going"
+- Event responses tracked in event_responses table
+- Notifications sent to all group members on event creation
+
+4.10 WEBSOCKET IMPLEMENTATION
+------------------------------
+**Unified WebSocket Handler (handlers/websocket.go):**
+
+**Connection Management:**
+- Single WebSocket endpoint: /ws
+- Connection authenticated via session cookie
+- User connections stored in map: userConnections[nickname]
+- Group connections stored in nested map: groupConnections[groupID][userID]
+
+**Connection Structure:**
+```go
+type Connection struct {
+    conn     *websocket.Conn
+    userID   int
+    nickname string
+    groups   map[int]bool  // Subscribed groups
+}
+```
+
+**Message Types:**
+1. **chat**: Private message between users
+2. **group_subscribe**: Subscribe to group chat
+3. **group_unsubscribe**: Unsubscribe from group chat
+4. **group_chat**: Send message to group
+5. **follow_status_update**: Follow request status change
+6. **user_list_update**: User list changed
+7. **notification**: New notification
+8. **notification_update**: Notification update
+9. **event_notification_update**: New event created
+
+**Private Chat Flow:**
+1. Client sends: {type: "chat", data: {to: "nickname", message: "text"}}
+2. Server saves message to database
+3. If recipient online: Send via WebSocket
+4. If recipient offline: Store for later retrieval
+5. Create notification for recipient
+
+**Group Chat Flow:**
+1. Client subscribes: {type: "group_subscribe", data: {groupId: 1}}
+2. Server verifies membership
+3. Client sends: {type: "group_chat", data: {groupId: 1, content: "text"}}
+4. Server saves to group_messages table
+5. Server broadcasts to all subscribed group members
+6. Update unread counts for offline members
+
+**Broadcasting Functions:**
+- BroadcastToGroup(): Send message to all group subscribers
+- BroadcastNotificationToUser(): Send notification to specific user
+- BroadcastRequestUpdate(): Notify about new requests
+- BroadcastEventNotificationUpdate(): Notify about new events
+
+**Connection Cleanup:**
+- On disconnect: Remove from userConnections
+- Remove from all group subscriptions
+- Clean up empty group connection maps
+
+4.11 NOTIFICATION SYSTEM
+------------------------
+**Notification Types:**
+- follow_request: New follow request received
+- group_invite: Group invitation received
+- group_join_request: Join request for group creator
+- event_created: New event in group
+- post_interaction: Like/comment on post
+- new_message: New private message
+- group_message: New group chat message
+
+**Notification Structure:**
+- ID
+- User ID (recipient)
+- Type
+- Message (text)
+- Is Read (boolean)
+- Related ID (ID of related entity)
+- Created At timestamp
+
+**Notification Operations (handlers/notifications.go):**
+- GetNotificationsHandler(): Get all user notifications
+- MarkNotificationsAsReadHandler(): Mark as read
+- DeleteNotificationHandler(): Delete notification
+
+**Notification Creation:**
+- CreateFollowRequestNotification(): On follow request
+- CreateGroupInviteNotification(): On group invite
+- CreateGroupJoinRequestNotification(): On join request
+- CreateEventNotification(): On event creation
+- CreateNewMessageNotification(): On private message
+- CreateGroupMessageNotification(): On group message
+
+**Real-time Notifications:**
+- WebSocket broadcasts for immediate delivery
+- Database storage for offline users
+- Notification dropdown in frontend shows unread count
+
+4.12 IMAGE HANDLING
+-------------------
+**Supported Formats:**
+- JPEG, JPG
+- PNG
+- GIF
+- Additional: BMP, TIFF, WebP, SVG, ICO
+
+**Upload Handlers:**
+- UploadProfilePicture(): User avatar upload
+- UploadPostImage(): Post image upload
+- UploadCommentImage(): Comment image upload
+- UploadGroupPostImage(): Group post image upload
+
+**Storage Structure:**
+uploads/
+├── {timestamp}.{ext}          # User avatars
+├── posts/
+│   └── post_{timestamp}.{ext} # Post images
+├── comments/
+│   └── comment_{timestamp}.{ext} # Comment images
+└── group_posts/
+    └── group_post_{id}_{timestamp}.{ext} # Group post images
+
+**Image Serving:**
+- Static file serving via HTTP handlers
+- Path: /uploads/{category}/{filename}
+- Direct file system access
+
+================================================================================
+5. FRONTEND IMPLEMENTATION DETAILS
+================================================================================
+
+5.1 PROJECT STRUCTURE
+---------------------
+frontend/next/
+├── src/
+│   ├── app/                    # Next.js App Router
+│   │   ├── layout.tsx         # Root layout
+│   │   ├── page.tsx           # Home page
+│   │   ├── components/        # Reusable components
+│   │   │   ├── topbar.tsx     # Navigation bar
+│   │   │   ├── Sidebar.tsx    # Side navigation
+│   │   │   ├── NotificationDropdown.tsx
+│   │   │   ├── PostPrivacyManager.tsx
+│   │   │   ├── UserSelector.tsx
+│   │   │   └── ...
+│   │   ├── context/           # React Context providers
+│   │   │   ├── auth.tsx       # Authentication context
+│   │   │   ├── WebSocketContext.tsx
+│   │   │   ├── NotificationContext.tsx
+│   │   │   ├── GroupNotificationsContext.tsx
+│   │   │   └── EventNotificationsContext.tsx
+│   │   ├── login/             # Login page
+│   │   ├── register/          # Registration page
+│   │   ├── profile/           # Profile pages
+│   │   ├── create-post/      # Post creation
+│   │   ├── ShowPosts/        # Post feed
+│   │   ├── messages/          # Chat interface
+│   │   ├── groups/            # Group pages
+│   │   ├── notifications/     # Notifications page
+│   │   └── requests/          # Requests page
+│   ├── components/            # Shared components
+│   └── lib/                   # Utility functions
+├── public/                    # Static assets
+├── package.json               # Dependencies
+├── Dockerfile                 # Frontend container
+├── next.config.ts             # Next.js configuration
+├── tailwind.config.ts         # Tailwind CSS config
+└── tsconfig.json              # TypeScript config
+
+5.2 AUTHENTICATION CONTEXT
+--------------------------
+**File**: src/app/context/auth.tsx
+
+**Functionality:**
+- Manages user authentication state
+- Checks auth status on app load
+- Provides user information to all components
+- Handles login/logout state
+
+**Context API:**
+```typescript
+interface AuthContextType {
+  user: User | null;
+  isLoggedIn: boolean;
+  isLoading: boolean;
+  authError: string | null;
+  retryAuth: () => void;
+  setIsLoggedIn: (loggedIn: boolean) => void;
+  setUser: (user: User | null) => void;
+}
+```
+
+**Auth Flow:**
+1. On app load: Check /auth/status endpoint
+2. If authenticated: Fetch user profile, set state
+3. If not authenticated: Redirect to login
+4. On login: Update context, redirect to home
+5. On logout: Clear context, redirect to login
+
+5.3 WEBSOCKET CONTEXT
+--------------------
+**File**: src/app/context/WebSocketContext.tsx
+
+**Functionality:**
+- Manages WebSocket connection
+- Handles reconnection logic
+- Provides message sending functions
+- Manages group subscriptions
+
+**Key Functions:**
+- ConnectWebsocket(): Establish connection
+- sendMessage(): Send private message
+- sendGroupMessage(): Send group message
+- subscribeToGroup(): Join group chat
+- unsubscribeFromGroup(): Leave group chat
+
+**Connection Management:**
+- Auto-reconnect on disconnect (3 second delay)
+- Connection state tracking
+- Message queue for offline messages
+- Event listeners for different message types
+
+5.4 ROUTING STRUCTURE
+---------------------
+**Next.js App Router Pages:**
+
+1. **/** (page.tsx): Home page with post feed
+2. **/login**: Login form
+3. **/register**: Registration form
+4. **/profile**: Current user's profile
+5. **/user/[nickname]**: Public user profile
+6. **/create-post**: Post creation form
+7. **/ShowPosts**: Post feed view
+8. **/messages**: Chat list
+9. **/messages/[nickname]**: Individual chat
+10. **/groups**: Group list
+11. **/groups/[id]**: Group detail page
+12. **/notifications**: Notifications page
+13. **/requests**: Pending requests page
+
+5.5 COMPONENT ARCHITECTURE
+---------------------------
+**Topbar Component:**
+- Navigation links
+- User menu
+- Notification bell with unread count
+- Logout button
+
+**Sidebar Component:**
+- Quick navigation
+- User profile summary
+- Recent activity
+
+**PostPrivacyManager Component:**
+- Privacy level selector
+- User selection for private posts
+- Permission management UI
+
+**NotificationDropdown Component:**
+- Real-time notification list
+- Mark as read functionality
+- Notification type icons
+
+**UserSelector Component:**
+- Multi-select user picker
+- Search functionality
+- Used for private post permissions
+
+5.6 STATE MANAGEMENT
+--------------------
+**React Context Providers:**
+1. **AuthContext**: User authentication state
+2. **WebSocketContext**: WebSocket connection and messages
+3. **NotificationContext**: General notifications
+4. **GroupNotificationsContext**: Group-specific notifications
+5. **EventNotificationsContext**: Event notifications
+
+**State Flow:**
+- Context providers wrap application
+- Components consume context via hooks
+- State updates trigger re-renders
+- WebSocket updates propagate through context
+
+5.7 API INTEGRATION
+-------------------
+**API Base URL**: http://localhost:8080
+
+**Fetch Configuration:**
+- Credentials: 'include' (for cookies)
+- Content-Type: application/json
+- Error handling with try-catch blocks
+
+**Common Patterns:**
+```typescript
+const response = await fetch('http://localhost:8080/endpoint', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  credentials: 'include',
+  body: JSON.stringify(data)
+});
+```
+
+5.8 FORM HANDLING
+-----------------
+**Registration Form:**
+- Required: Email, Password, First Name, Last Name, Date of Birth
+- Optional: Nickname, Avatar, About Me
+- Validation: Email format, password strength
+- Error display: Inline error messages
+
+**Post Creation Form:**
+- Title, Content, Category (required)
+- Image upload (optional)
+- Privacy level selection
+- User selection for private posts
+- Form validation before submission
+
+**Event Creation Form:**
+- Title, Description, Date/Time (required)
+- RSVP options: Going, Not Going
+- Group selection
+
+================================================================================
+6. DATABASE SCHEMA
+================================================================================
+
+6.1 CORE TABLES
+---------------
+**users:**
+- uid (PRIMARY KEY, AUTOINCREMENT)
+- nickname (UNIQUE)
+- first_name (NOT NULL)
+- last_name (NOT NULL)
+- gender (NOT NULL)
+- age (NOT NULL)
+- password (NOT NULL, bcrypt hashed)
+- email (UNIQUE, NOT NULL)
+- is_public (DEFAULT 'public')
+- avatar_url
+- about_me
+
+**sessions:**
+- id (PRIMARY KEY, AUTOINCREMENT)
+- session (TEXT, session UUID)
+- expires_at (DATETIME)
+- user_id (FOREIGN KEY -> users.uid)
+- timestamp (DEFAULT CURRENT_TIMESTAMP)
+
+**posts:**
+- post_id (PRIMARY KEY, AUTOINCREMENT)
+- user_id (FOREIGN KEY -> users.uid)
+- post_heading (NOT NULL)
+- post_data (NOT NULL)
+- category (TEXT)
+- image_url (TEXT)
+- privacy_level (CHECK: 'public', 'almost_private', 'private')
+- like (DEFAULT 0)
+- dislike (DEFAULT 0)
+- created_at (DEFAULT CURRENT_TIMESTAMP)
+
+**post_permissions:**
+- post_id (FOREIGN KEY -> posts.post_id)
+- user_id (FOREIGN KEY -> users.uid)
+- PRIMARY KEY (post_id, user_id)
+
+**comments:**
+- comment_id (PRIMARY KEY, AUTOINCREMENT)
+- comment (NOT NULL)
+- user_id (FOREIGN KEY -> users.uid)
+- post_id (FOREIGN KEY -> posts.post_id)
+- image_url (TEXT)
+- time (DEFAULT CURRENT_TIMESTAMP)
+
+**follows:**
+- id (PRIMARY KEY, AUTOINCREMENT)
+- follower_id (FOREIGN KEY -> users.uid)
+- following_id (FOREIGN KEY -> users.uid)
+- status (DEFAULT 'pending', CHECK: 'pending', 'accepted')
+- created_at (DEFAULT CURRENT_TIMESTAMP)
+
+6.2 MESSAGING TABLES
+--------------------
+**messages:**
+- message_id (PRIMARY KEY, AUTOINCREMENT)
+- sender (FOREIGN KEY -> users.nickname)
+- recipient (FOREIGN KEY -> users.nickname)
+- message (NOT NULL)
+- timestamp (DEFAULT CURRENT_TIMESTAMP)
+- is_read (DEFAULT 0)
+
+6.3 GROUP TABLES
+----------------
+**groups:**
+- group_id (PRIMARY KEY, AUTOINCREMENT)
+- group_name (NOT NULL)
+- description (TEXT)
+- created_by (FOREIGN KEY -> users.uid)
+- created_at (DEFAULT CURRENT_TIMESTAMP)
+
+**group_members:**
+- id (PRIMARY KEY, AUTOINCREMENT)
+- group_id (FOREIGN KEY -> groups.group_id)
+- user_id (FOREIGN KEY -> users.uid)
+- joined_at (TEXT, NOT NULL)
+- is_admin (BOOLEAN, DEFAULT FALSE)
+- UNIQUE (group_id, user_id)
+
+**group_messages:**
+- id (PRIMARY KEY, AUTOINCREMENT)
+- group_id (FOREIGN KEY -> groups.group_id)
+- user_id (FOREIGN KEY -> users.uid)
+- message (NOT NULL)
+- created_at (DEFAULT CURRENT_TIMESTAMP)
+
+**group_posts:**
+- id (PRIMARY KEY, AUTOINCREMENT)
+- group_id (FOREIGN KEY -> groups.group_id)
+- title (NOT NULL)
+- content (NOT NULL)
+- media (TEXT, DEFAULT '')
+- image_url (TEXT)
+- categories (TEXT)
+- author_id (FOREIGN KEY -> users.uid)
+- created_at (DATETIME, NOT NULL)
+
+**group_post_likes:**
+- id (PRIMARY KEY, AUTOINCREMENT)
+- post_id (FOREIGN KEY -> group_posts.id)
+- user_id (FOREIGN KEY -> users.uid)
+- created_at (DATETIME, NOT NULL)
+- UNIQUE (post_id, user_id)
+
+**group_post_comments:**
+- id (PRIMARY KEY, AUTOINCREMENT)
+- post_id (FOREIGN KEY -> group_posts.id)
+- content (NOT NULL)
+- image_url (TEXT)
+- author_id (FOREIGN KEY -> users.uid)
+- created_at (DATETIME, NOT NULL)
+
+**group_join_requests:**
+- id (PRIMARY KEY, AUTOINCREMENT)
+- group_id (FOREIGN KEY -> groups.group_id)
+- user_id (FOREIGN KEY -> users.uid)
+- username (NOT NULL)
+- status (DEFAULT 'pending')
+- created_at (TEXT, NOT NULL)
+- UNIQUE (group_id, user_id)
+
+**group_invite_requests:**
+- id (PRIMARY KEY, AUTOINCREMENT)
+- group_id (FOREIGN KEY -> groups.group_id)
+- user_id (FOREIGN KEY -> users.uid)
+- username (NOT NULL)
+- status (DEFAULT 'pending')
+- created_at (TEXT, NOT NULL)
+- UNIQUE (group_id, user_id)
+
+6.4 EVENT TABLES
+----------------
+**group_events:**
+- id (PRIMARY KEY, AUTOINCREMENT)
+- group_id (FOREIGN KEY -> groups.group_id)
+- title (NOT NULL)
+- description (NOT NULL)
+- event_time (DATETIME, NOT NULL)
+- created_by (FOREIGN KEY -> users.uid)
+- created_at (DEFAULT CURRENT_TIMESTAMP)
+
+**event_responses:**
+- id (PRIMARY KEY, AUTOINCREMENT)
+- event_id (FOREIGN KEY -> group_events.id)
+- user_id (FOREIGN KEY -> users.uid)
+- response (CHECK: 'going', 'not_going')
+- created_at (DEFAULT CURRENT_TIMESTAMP)
+- UNIQUE (event_id, user_id)
+
+6.5 NOTIFICATION TABLES
+------------------------
+**notifications:**
+- id (PRIMARY KEY, AUTOINCREMENT)
+- user_id (FOREIGN KEY -> users.uid)
+- type (CHECK: 'follow_request', 'group_invite', 'group_join_request',
+         'event_created', 'post_interaction', 'new_message', 'group_message')
+- message (NOT NULL)
+- is_read (DEFAULT 0)
+- related_id (INTEGER, ID of related entity)
+- created_at (DEFAULT CURRENT_TIMESTAMP)
+
+**group_message_notifications:**
+- id (PRIMARY KEY, AUTOINCREMENT)
+- group_id (FOREIGN KEY -> groups.group_id)
+- user_id (FOREIGN KEY -> users.uid)
+- last_read_message_id (DEFAULT 0)
+- unread_count (DEFAULT 0)
+- UNIQUE (group_id, user_id)
+
+6.6 INDEXES
+-----------
+**Performance Indexes:**
+- idx_notifications_user_id: On notifications(user_id)
+- idx_notifications_type: On notifications(type)
+- idx_notifications_is_read: On notifications(is_read)
+- idx_group_posts_group_id: On group_posts(group_id)
+- idx_group_posts_author_id: On group_posts(author_id)
+- idx_group_posts_created_at: On group_posts(created_at)
+- idx_group_join_requests_group_status: On group_join_requests(group_id, status)
+- idx_group_events_group_id: On group_events(group_id)
+- idx_event_responses_event_id: On event_responses(event_id)
+
+================================================================================
+7. SECURITY IMPLEMENTATION
+================================================================================
+
+7.1 AUTHENTICATION SECURITY
+---------------------------
+**Password Security:**
+- Bcrypt hashing with default cost factor (10)
+- Passwords never stored in plain text
+- Password comparison uses constant-time comparison
+
+**Session Security:**
+- UUID-based session IDs (unpredictable)
+- Session expiration: 24 hours
+- HttpOnly cookies (prevents XSS)
+- SameSite=Lax (CSRF protection)
+- Secure flag (for HTTPS in production)
+
+**Session Management:**
+- Single active session per user (new login invalidates old)
+- Session validation on every protected request
+- Automatic cleanup of expired sessions
+
+7.2 AUTHORIZATION
+-----------------
+**Route Protection:**
+- RequireAuth middleware checks session
+- Unauthorized requests return 401
+- User ID injected into request context
+
+**Access Control:**
+- Post privacy enforced at database query level
+- Profile privacy checked before display
+- Group membership verified for group operations
+- Chat access requires follow relationship
+
+7.3 INPUT VALIDATION
+--------------------
+**Registration:**
+- Email format validation
+- Unique email/nickname check
+- Required field validation
+
+**Post Creation:**
+- Required field validation
+- Privacy level validation
+- File type validation for images
+- File size limits (10MB)
+
+**SQL Injection Prevention:**
+- Parameterized queries throughout
+- No string concatenation in SQL
+- Prepared statements for all queries
+
+7.4 CORS CONFIGURATION
+----------------------
+- Allowed Origin: http://localhost:3000
+- Credentials: Enabled (for cookies)
+- Methods: GET, POST, PUT, DELETE, OPTIONS, PATCH
+- Headers: Content-Type, Authorization
+
+7.5 FILE UPLOAD SECURITY
+-------------------------
+- File type validation (whitelist approach)
+- File size limits enforced
+- Unique filename generation (prevents overwrites)
+- Directory traversal prevention
+- Stored outside web root (relative paths)
+
+================================================================================
+8. DOCKER IMPLEMENTATION
+================================================================================
+
+8.1 BACKEND DOCKERFILE
+---------------------
+**Multi-stage Build:**
+1. **Builder Stage:**
+   - Base: golang:1.23-alpine
+   - Install: gcc, musl-dev, sqlite-dev (for CGO)
+   - Copy: go.mod, go.sum
+   - Download: Dependencies
+   - Build: Application binary
+
+2. **Final Stage:**
+   - Base: alpine:latest
+   - Install: ca-certificates
+   - Copy: Binary from builder
+   - Copy: Migrations directory
+   - Create: uploads directory
+   - Expose: Port 8080
+   - CMD: Run binary
+
+**Key Features:**
+- CGO enabled for SQLite
+- Minimal final image size
+- Migrations included
+- Volume mount for uploads
+
+8.2 FRONTEND DOCKERFILE
+------------------------
+**Multi-stage Build:**
+1. **Builder Stage:**
+   - Base: node:18-alpine
+   - Copy: package files
+   - Install: Dependencies (npm ci)
+   - Copy: Source code
+   - Build: Next.js application
+
+2. **Production Stage:**
+   - Base: node:18-alpine
+   - Create: Non-root user (nextjs)
+   - Copy: Built application
+   - Copy: Static files
+   - Change: Ownership to nextjs user
+   - Expose: Port 3000
+   - CMD: Run server.js
+
+**Key Features:**
+- Standalone output mode
+- Non-root user execution
+- Optimized production build
+- Static file serving
+
+8.3 DOCKER COMPOSE
+------------------
+**Services:**
+1. **backend:**
+   - Build: ./backend
+   - Ports: 8080:8080
+   - Volumes:
+     * ./backend/uploads:/root/uploads
+     * ./backend/SN.db:/root/SN.db
+   - Environment: PORT=8080
+   - Network: social-network
+   - Restart: unless-stopped
+
+2. **frontend:**
+   - Build: ./frontend/next
+   - Ports: 3001:3000
+   - Depends_on: backend
+   - Environment: NEXT_PUBLIC_API_URL=http://localhost:8080
+   - Network: social-network
+   - Restart: unless-stopped
+
+**Network:**
+- Bridge network: social-network
+- Enables inter-container communication
+
+**Volumes:**
+- Persistent database storage
+- Persistent uploads directory
+
+8.4 DEPLOYMENT WORKFLOW
+----------------------
+1. Build images: docker-compose build
+2. Start containers: docker-compose up
+3. Access application: http://localhost:3001
+4. Backend API: http://localhost:8080
+
+================================================================================
+9. API ENDPOINTS REFERENCE
+================================================================================
+
+9.1 AUTHENTICATION ENDPOINTS
+----------------------------
+POST   /login                    Login user
+POST   /register                 Register new user
+POST   /logout                   Logout user
+GET    /auth/status              Check authentication status
+
+9.2 USER ENDPOINTS
+------------------
+GET    /profile                 Get current user profile
+GET    /user/{nickname}         Get public user profile
+POST   /update-profile          Update user profile
+POST   /upload-avatar           Upload profile picture
+GET    /uploads/                Serve uploaded images
+
+9.3 POST ENDPOINTS
+------------------
+POST   /createpost              Create new post
+GET    /posts                   Get posts (with privacy filtering)
+POST   /upload-post-image       Upload post image
+GET    /uploads/posts/          Serve post images
+
+9.4 COMMENT ENDPOINTS
+---------------------
+GET    /comments                Get comments for post
+POST   /comments/add           Add comment
+POST   /upload-comment-image    Upload comment image
+GET    /uploads/comments/       Serve comment images
+
+9.5 POST PRIVACY ENDPOINTS
+--------------------------
+POST   /post-permissions/add    Add user to private post
+POST   /post-permissions/remove Remove user from private post
+GET    /post-permissions/get     Get post permissions
+POST   /post-permissions/update Update post permissions
+GET    /post-permissions/users   Get users for selection
+GET    /post-permissions/check-access Check post access
+
+9.6 FOLLOW ENDPOINTS
+--------------------
+POST   /follow                  Send follow request
+POST   /unfollow                Unfollow user
+POST   /accept                  Accept follow request
+POST   /decline                 Decline follow request
+GET    /follow-status           Get follow status
+GET    /followers/{nickname}    Get user's followers
+GET    /following/{nickname}    Get user's following
+GET    /followers/me            Get current user's followers
+
+9.7 REQUEST ENDPOINTS
+---------------------
+GET    /requests                Get all pending requests
+
+9.8 MESSAGE ENDPOINTS
+---------------------
+GET    /messages                Get message history
+POST   /messages/store          Store message (legacy)
+GET    /messages/unread/count   Get unread count
+GET    /messages/unread/by-sender Get unread by sender
+POST   /messages/mark-read      Mark messages as read
+GET    /chat/history            Get chat history
+GET    /chat/recent-users       Get recent chat users
+GET    /chat/can-access         Check chat access
+
+9.9 GROUP ENDPOINTS
+-------------------
+POST   /creategroup             Create new group
+GET    /groups                  Get all groups
+GET    /group-members           Get group members
+POST   /request-join-group      Request to join group
+POST   /approve-group-request   Approve join request
+POST   /reject-group-request    Reject join request
+GET    /group-join-requests      List join requests
+POST   /group-invite-requests   Invite user to group
+POST   /accept-group-invite     Accept group invitation
+POST   /reject-group-invite     Reject group invitation
+
+9.10 GROUP POST ENDPOINTS
+--------------------------
+GET    /group-posts             Get group posts
+POST   /create-group-post       Create group post
+POST   /like-group-post         Like group post
+DELETE /delete-group-post/{id} Delete group post
+POST   /upload-group-post-image Upload group post image
+GET    /uploads/group_posts/    Serve group post images
+
+9.11 GROUP COMMENT ENDPOINTS
+-----------------------------
+GET    /group-post-comments     Get group post comments
+POST   /add-group-post-comment  Add comment to group post
+DELETE /delete-group-post-comment/{id} Delete comment
+
+9.12 GROUP CHAT ENDPOINTS
+--------------------------
+GET    /group-messages          Get group chat history
+
+9.13 GROUP EVENT ENDPOINTS
+--------------------------
+GET    /group-events            Get group events
+POST   /create-group-event      Create event
+POST   /respond-to-event       RSVP to event
+GET    /all-group-events        Get all events
+
+9.14 NOTIFICATION ENDPOINTS
+----------------------------
+GET    /notifications           Get user notifications
+POST   /notifications/mark-read Mark notifications as read
+DELETE /notifications/{id}      Delete notification
+GET    /group-notifications     Get group notifications
+POST   /mark-group-read         Mark group notifications as read
+GET    /event-notifications     Get event notifications
+POST   /mark-event-read         Mark event notifications as read
+
+9.15 WEBSOCKET ENDPOINT
+-----------------------
+GET    /ws                      Unified WebSocket connection
+
+================================================================================
+10. WEBSOCKET MESSAGE PROTOCOL
+================================================================================
+
+10.1 MESSAGE FORMAT
+-------------------
+All WebSocket messages follow this structure:
+```json
+{
+  "type": "message_type",
+  "data": { ... }
+}
+```
+
+10.2 CLIENT TO SERVER MESSAGES
+------------------------------
+**Private Chat:**
+```json
+{
+  "type": "chat",
+  "data": {
+    "to": "recipient_nickname",
+    "message": "message text"
+  }
+}
+```
+
+**Group Subscribe:**
+```json
+{
+  "type": "group_subscribe",
+  "data": {
+    "groupId": 1
+  }
+}
+```
+
+**Group Unsubscribe:**
+```json
+{
+  "type": "group_unsubscribe",
+  "data": {
+    "groupId": 1
+  }
+}
+```
+
+**Group Chat:**
+```json
+{
+  "type": "group_chat",
+  "data": {
+    "groupId": 1,
+    "content": "message text"
+  }
+}
+```
+
+10.3 SERVER TO CLIENT MESSAGES
+------------------------------
+**Private Chat Response:**
+```json
+{
+  "type": "chat",
+  "data": {
+    "from": "sender_nickname",
+    "to": "recipient_nickname",
+    "message": "message text",
+    "timestamp": "2024-01-01T12:00:00Z"
+  }
+}
+```
+
+**Group Chat Response:**
+```json
+{
+  "type": "group_chat",
+  "data": {
+    "sender": "sender_nickname",
+    "content": "message text",
+    "timestamp": "2024-01-01T12:00:00Z",
+    "groupId": 1
+  }
+}
+```
+
+**Notification:**
+```json
+{
+  "type": "notification",
+  "data": {
+    "type": "follow_request",
+    "message": "User wants to follow you",
+    "related_id": 123,
+    "timestamp": 1704110400
+  }
+}
+```
+
+**Follow Status Update:**
+```json
+{
+  "type": "follow_status_update",
+  "data": {
+    "status": "accepted"
+  }
+}
+```
+
+**User List Update:**
+```json
+{
+  "type": "user_list_update",
+  "data": null
+}
+```
+
+================================================================================
+11. FEATURE IMPLEMENTATION DETAILS
+================================================================================
+
+11.1 USER REGISTRATION FLOW
+---------------------------
+1. User fills registration form
+2. Frontend validates required fields
+3. POST /register with user data
+4. Backend validates email uniqueness
+5. Backend generates nickname if not provided
+6. Backend hashes password with bcrypt
+7. Backend inserts user into database
+8. Backend broadcasts user list update
+9. Frontend receives success response
+10. User redirected to login page
+
+11.2 LOGIN FLOW
+---------------
+1. User enters email and password
+2. POST /login with credentials
+3. Backend queries user by email
+4. Backend compares password hash
+5. Backend creates session (UUID)
+6. Backend sets session cookie
+7. Frontend receives session cookie
+8. Frontend checks /auth/status
+9. Frontend updates auth context
+10. User redirected to home page
+
+11.3 POST CREATION FLOW
+----------------------
+1. User navigates to create-post page
+2. User fills post form (title, content, category)
+3. User optionally uploads image
+4. User selects privacy level
+5. If private: User selects allowed users
+6. POST /createpost with post data
+7. Backend validates session
+8. Backend validates post data
+9. Backend inserts post into database
+10. If private: Backend adds permissions
+11. Frontend receives success response
+12. Post appears in feed
+
+11.4 FOLLOW REQUEST FLOW
+-----------------------
+1. User views another user's profile
+2. User clicks "Follow" button
+3. Frontend checks target user's privacy
+4. If public: POST /follow (auto-accepted)
+5. If private: POST /follow (creates pending request)
+6. Backend creates follow record (status: pending)
+7. Backend creates notification for target user
+8. Backend sends WebSocket notification
+9. Target user sees notification
+10. Target user can accept/decline
+
+11.5 GROUP CREATION FLOW
+------------------------
+1. User navigates to create-group page
+2. User enters group name and description
+3. POST /creategroup
+4. Backend creates group record
+5. Backend adds creator as admin member
+6. Frontend receives group ID
+7. User redirected to group page
+8. User can invite members or accept requests
+
+11.6 PRIVATE MESSAGE FLOW
+-------------------------
+1. User opens chat with another user
+2. Frontend establishes WebSocket connection
+3. User types message
+4. Frontend sends: {type: "chat", data: {...}}
+5. Backend validates follow relationship
+6. Backend saves message to database
+7. If recipient online: Backend sends via WebSocket
+8. If recipient offline: Message stored for later
+9. Backend creates notification
+10. Recipient receives message in real-time
+
+11.7 GROUP CHAT FLOW
+--------------------
+1. User joins group page
+2. Frontend subscribes to group: {type: "group_subscribe"}
+3. Backend verifies group membership
+4. Backend adds user to group connections
+5. User types message
+6. Frontend sends: {type: "group_chat", data: {...}}
+7. Backend saves to group_messages table
+8. Backend broadcasts to all subscribed members
+9. All online members receive message
+10. Offline members see message on next load
+
+11.8 EVENT CREATION FLOW
+------------------------
+1. Group member navigates to group events
+2. User clicks "Create Event"
+3. User fills: title, description, date/time
+4. POST /create-group-event
+5. Backend creates event record
+6. Backend creates notifications for all group members
+7. Backend sends WebSocket notifications
+8. All members see event in events list
+9. Members can RSVP: going/not going
+10. Event creator sees RSVP counts
+
+================================================================================
+12. TESTING AND VALIDATION
+================================================================================
+
+12.1 FUNCTIONAL TESTING (Based on audit.md)
+--------------------------------------------
+The project includes comprehensive functional testing requirements:
+
+**Authentication Testing:**
+- Registration with all required fields
+- Registration with optional fields
+- Duplicate email detection
+- Duplicate nickname detection
+- Login with correct credentials
+- Login with incorrect credentials
+- Session persistence across browser refresh
+- Multiple browser session isolation
+- Logout functionality
+
+**Profile Testing:**
+- Profile display with all information
+- Post display on profile
+- Followers/following list display
+- Profile privacy toggle
+- Public profile visibility
+- Private profile access control
+
+**Follow System Testing:**
+- Follow public user (auto-accept)
+- Follow private user (request)
+- Accept follow request
+- Decline follow request
+- Unfollow user
+- Follow status checking
+
+**Post System Testing:**
+- Create post with text
+- Create post with image (JPEG, PNG, GIF)
+- Create post with privacy levels
+- View public posts
+- View almost-private posts (as follower)
+- View private posts (with permission)
+- Comment on posts
+- Comment with images
+
+**Group System Testing:**
+- Create group
+- Invite users to group
+- Accept/decline group invitations
+- Request to join group
+- Approve/reject join requests
+- Create group posts
+- Comment on group posts
+- Create group events
+- RSVP to events
+
+**Chat System Testing:**
+- Send private message (real-time)
+- Receive private message (real-time)
+- Chat between non-followers (should fail)
+- Group chat (real-time)
+- Multiple users in group chat
+- Emoji support in messages
+
+**Notification System Testing:**
+- Follow request notifications
+- Group invite notifications
+- Group join request notifications
+- Event creation notifications
+- Notification display on all pages
+- Mark notifications as read
+
+12.2 INTEGRATION TESTING
+-----------------------
+- Frontend-backend communication
+- Database operations
+- WebSocket connections
+- File uploads
+- Image serving
+- Session management
+- Cookie handling
+
+12.3 SECURITY TESTING
+---------------------
+- SQL injection prevention
+- XSS prevention
+- CSRF protection
+- Session hijacking prevention
+- Password security
+- File upload security
+- Access control enforcement
+
+================================================================================
+13. DEPLOYMENT AND OPERATIONS
+================================================================================
+
+13.1 BUILD PROCESS
+------------------
+**Backend:**
+```bash
+cd backend
+go mod download
+go build -o main .
+```
+
+**Frontend:**
+```bash
+cd frontend/next
+npm install
+npm run build
+```
+
+**Docker:**
+```bash
+docker-compose build
+docker-compose up
+```
+
+13.2 ENVIRONMENT VARIABLES
+--------------------------
+**Backend:**
+- PORT: Server port (default: 8080)
+
+**Frontend:**
+- NEXT_PUBLIC_API_URL: Backend API URL
+
+13.3 VOLUME MANAGEMENT
+----------------------
+- Database: ./backend/SN.db (persistent)
+- Uploads: ./backend/uploads (persistent)
+- Both mounted as Docker volumes
+
+13.4 LOGGING
+------------
+- Console logging for debugging
+- Error logging for troubleshooting
+- WebSocket connection logging
+- Database operation logging
+
+================================================================================
+14. KNOWN LIMITATIONS AND FUTURE IMPROVEMENTS
+================================================================================
+
+14.1 CURRENT LIMITATIONS
+------------------------
+- Single SQLite database (not suitable for high concurrency)
+- No horizontal scaling support
+- File storage on local filesystem (not cloud-based)
+- No email verification
+- No password reset functionality
+- No image resizing/optimization
+- Limited error handling in some areas
+- No rate limiting
+- No API versioning
+
+14.2 POTENTIAL IMPROVEMENTS
+---------------------------
+- Database migration to PostgreSQL for production
+- Cloud storage for images (S3, Cloudinary)
+- Email service integration
+- Password reset functionality
+- Image optimization and CDN
+- Rate limiting middleware
+- API versioning
+- Comprehensive error handling
+- Unit and integration tests
+- CI/CD pipeline
+- Monitoring and analytics
+- Search functionality
+- Advanced privacy controls
+- Content moderation
+- Reporting system
+
+================================================================================
+15. TECHNICAL DECISIONS AND RATIONALE
+================================================================================
+
+15.1 TECHNOLOGY CHOICES
+-----------------------
+**Go for Backend:**
+- Excellent performance
+- Strong concurrency support (goroutines)
+- Simple deployment (single binary)
+- Good standard library
+- Growing ecosystem
+
+**Next.js for Frontend:**
+- Server-side rendering support
+- Excellent developer experience
+- Built-in routing
+- TypeScript support
+- Active community
+
+**SQLite for Database:**
+- Zero configuration
+- File-based (easy backup)
+- Sufficient for project scope
+- ACID compliant
+- Good for development
+
+**Docker for Deployment:**
+- Consistent environments
+- Easy setup
+- Isolation
+- Reproducible builds
+
+15.2 ARCHITECTURE DECISIONS
+---------------------------
+**RESTful API:**
+- Standard HTTP methods
+- Clear resource structure
+- Easy to understand
+- Good tooling support
+
+**WebSocket for Real-time:**
+- Low latency
+- Bidirectional communication
+- Efficient for chat
+- Native browser support
+
+**Session-based Auth:**
+- Simple implementation
+- Good security with HttpOnly cookies
+- Server-side control
+- Easy to invalidate
+
+**File-based Image Storage:**
+- Simple implementation
+- No external dependencies
+- Easy to understand
+- Sufficient for project scope
+
+================================================================================
+16. CONCLUSION
+================================================================================
+
+This Social Network project demonstrates a comprehensive full-stack web
+application with real-time communication capabilities. The implementation
+follows modern best practices in web development, including:
+
+- Clean architecture with separation of concerns
+- Secure authentication and authorization
+- Real-time features via WebSocket
+- Comprehensive privacy controls
+- Docker containerization for easy deployment
+- Well-organized codebase with clear structure
+
+The project successfully implements all required features from the specification,
+including user management, posts, groups, events, messaging, and notifications.
+The use of modern technologies (Go, Next.js, SQLite, Docker) provides a solid
+foundation for further development and scaling.
+
+The codebase is well-documented, follows Go and TypeScript best practices, and
+includes comprehensive error handling and security measures. The migration system
+ensures database schema consistency, and the Docker setup enables easy
+deployment across different environments.
+
+This project serves as an excellent example of a modern social networking
+platform implementation, suitable for academic study and as a foundation for
+further development.
+
+================================================================================
+END OF DOCUMENTATION
+================================================================================
+

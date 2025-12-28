@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import EmojiPicker from "emoji-picker-react";
 import { useGroupNotifications } from "../context/GroupNotificationsContext";
 import { useWebSocket } from "../context/WebSocketContext";
+import { useAuth } from "../context/auth";
 
 interface Message {
   sender: string;
@@ -25,6 +26,7 @@ export default function GroupChat({ groupId, groupName }: Props) {
   const bottomRef = useRef<HTMLDivElement | null>(null);
   const { markGroupAsRead } = useGroupNotifications();
   const { sendGroupMessage, onGroupMessage, offGroupMessage, subscribeToGroup, unsubscribeFromGroup } = useWebSocket();
+  const { user } = useAuth();
 
   useEffect(() => {
     fetch(`http://localhost:8080/group-messages?group_id=${groupId}`, {
@@ -135,7 +137,7 @@ export default function GroupChat({ groupId, groupName }: Props) {
           <div className="bg-gradient-to-r from-green-600 to-green-600 px-8 py-6">
             <div className="flex items-center justify-between text-white">
               <div>
-                <h1 className="text-2xl font-bold">{groupName}</h1>
+                <h1 className="text-2xl font-bold break-words overflow-x-auto max-w-full">{groupName}</h1>
                 <p className="text-green-100 opacity-90">Group Chat</p>
               </div>
               <div className="flex items-center space-x-3">
@@ -162,33 +164,50 @@ export default function GroupChat({ groupId, groupName }: Props) {
               </div>
             ) : (
               <div className="space-y-4">
-                {messages.map((msg, index) => (
-                  <div key={index} className={`flex ${msg.sender === "System" ? "justify-center" : ""}`}>
-                    {msg.sender === "System" ? (
-                      <div className="bg-blue-100 text-blue-800 px-4 py-2 rounded-full text-sm font-medium">
-                        {msg.content}
-                      </div>
-                    ) : (
-                      <div className="bg-white rounded-2xl shadow-sm p-4 max-w-lg hover:shadow-md transition-shadow">
-                        <div className="flex items-center space-x-2 mb-2">
-                          <div className="w-8 h-8 bg-gradient-to-r from-sky-500 to-sky-500 rounded-full flex items-center justify-center">
-                            <span className="text-white text-sm font-bold">
-                              {msg.sender.charAt(0).toUpperCase()}
+                {messages.map((msg, index) => {
+                  const isCurrentUser = user?.nickname && msg.sender === user.nickname;
+                  return (
+                    <div key={index} className={`flex ${msg.sender === "System" ? "justify-center" : isCurrentUser ? "justify-end" : "justify-start"}`}>
+                      {msg.sender === "System" ? (
+                        <div className="bg-blue-100 text-blue-800 px-4 py-2 rounded-full text-sm font-medium">
+                          {msg.content}
+                        </div>
+                      ) : (
+                        <div className={`rounded-2xl shadow-sm p-4 max-w-lg hover:shadow-md transition-shadow ${
+                          isCurrentUser 
+                            ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white" 
+                            : "bg-white text-gray-800"
+                        }`}>
+                          <div className={`flex items-center space-x-2 mb-2 ${isCurrentUser ? "flex-row-reverse space-x-reverse" : ""}`}>
+                            <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                              isCurrentUser 
+                                ? "bg-white/20" 
+                                : "bg-gradient-to-r from-sky-500 to-sky-500"
+                            }`}>
+                              <span className={`text-sm font-bold ${
+                                isCurrentUser ? "text-white" : "text-white"
+                              }`}>
+                                {msg.sender.charAt(0).toUpperCase()}
+                              </span>
+                            </div>
+                            <span className={`font-semibold ${isCurrentUser ? "text-white" : "text-gray-800"}`}>
+                              {isCurrentUser ? "You" : msg.sender}
+                            </span>
+                            <span className={`text-xs ${isCurrentUser ? "text-blue-100" : "text-gray-400"}`}>
+                              {new Date(msg.timestamp).toLocaleTimeString([], { 
+                                hour: '2-digit', 
+                                minute: '2-digit' 
+                              })}
                             </span>
                           </div>
-                          <span className="font-semibold text-gray-800">{msg.sender}</span>
-                          <span className="text-xs text-gray-400">
-                            {new Date(msg.timestamp).toLocaleTimeString([], { 
-                              hour: '2-digit', 
-                              minute: '2-digit' 
-                            })}
-                          </span>
+                          <p className={`leading-relaxed whitespace-pre-wrap overflow-y-auto max-h-[300px] break-words ${
+                            isCurrentUser ? "text-white" : "text-gray-700"
+                          }`}>{msg.content}</p>
                         </div>
-                        <p className="text-gray-700 leading-relaxed">{msg.content}</p>
-                      </div>
-                    )}
-                  </div>
-                ))}
+                      )}
+                    </div>
+                  );
+                })}
                 <div ref={bottomRef} />
               </div>
             )}
@@ -203,6 +222,7 @@ export default function GroupChat({ groupId, groupName }: Props) {
                   onKeyPress={handleKeyPress}
                   className="w-full h-16 p-4 border rounded-3xl focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
                   placeholder="Type your message..."
+                  maxLength={1000}
                 />
               </div>
 

@@ -253,6 +253,7 @@ export default function GroupEvents({ groupId, groupName }: GroupEventsProps) {
                 className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent"
                 required
                 disabled={loading}
+                maxLength={100}
                 placeholder="What's the event called?"
               />
             </div>
@@ -266,6 +267,7 @@ export default function GroupEvents({ groupId, groupName }: GroupEventsProps) {
                 rows={4}
                 required
                 disabled={loading}
+                maxLength={1000}
                 placeholder="Tell everyone about the event..."
               />
             </div>
@@ -324,8 +326,8 @@ export default function GroupEvents({ groupId, groupName }: GroupEventsProps) {
                 <div key={event.id} className="bg-white rounded-3xl shadow-xl p-6 border-l-8 border-red-600">
                   <div className="flex justify-between items-start mb-4">
                     <div className="flex-1">
-                      <h5 className="text-xl font-semibold text-gray-900 mb-2">{event.title}</h5>
-                      <p className="text-gray-600 mb-3 leading-relaxed">{event.description}</p>
+                      <h5 className="text-xl font-semibold text-gray-900 mb-2 break-words overflow-x-auto">{event.title}</h5>
+                      <p className="text-gray-600 mb-3 leading-relaxed whitespace-pre-wrap overflow-y-auto max-h-[150px] break-words">{event.description}</p>
                       <div className="flex items-center text-sm text-gray-500 space-x-4">
                         <div className="flex items-center space-x-1">
                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

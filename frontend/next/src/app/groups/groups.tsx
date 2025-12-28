@@ -629,7 +629,7 @@ export function Groups() {
                         </span>
                       </div>
                       <div>
-                        <div className="font-semibold text-gray-900">{invite.groupName}</div>
+                        <div className="font-semibold text-gray-900 break-words overflow-x-auto">{invite.groupName}</div>
                         <span className="text-sm text-gray-500">
                           Invited {new Date(invite.createdAt).toLocaleDateString()}
                         </span>
@@ -699,7 +699,7 @@ export function Groups() {
 
           <div className="bg-white rounded-3xl shadow-xl p-8 mb-8">
             <h2 className="text-3xl font-bold text-gray-900 mb-2">
-              Manage {selectedGroup.groupName}
+              <span className="break-words overflow-x-auto">Manage {selectedGroup.groupName}</span>
             </h2>
             <p className="text-gray-600">Invite members and manage group access</p>
           </div>
@@ -715,6 +715,7 @@ export function Groups() {
                   placeholder="Enter username"
                   className="flex-1 px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   disabled={loading}
+                  maxLength={50}
                   onKeyPress={(e) => {
                     if (e.key === 'Enter') {
                       handleInviteUser(selectedGroup.id);
@@ -822,7 +823,7 @@ export function Groups() {
           </button>
 
           <div className="bg-white rounded-3xl shadow-xl p-8 mb-8">
-            <h2 className="text-3xl font-bold text-gray-900 mb-2">
+            <h2 className="text-3xl font-bold text-gray-900 mb-2 break-words overflow-x-auto">
               {selectedGroup.groupName} Events
             </h2>
             <p className="text-gray-600">Plan and organize group activities</p>
@@ -883,7 +884,7 @@ export function Groups() {
           </button>
           
           <div className="bg-white rounded-3xl shadow-xl p-8 mb-8">
-            <h2 className="text-3xl font-bold text-gray-900 mb-2">
+            <h2 className="text-3xl font-bold text-gray-900 mb-2 break-words overflow-x-auto">
               {selectedGroup.groupName} Posts
             </h2>
             <p className="text-gray-600">Share ideas and discussions with your group</p>
@@ -1002,6 +1003,7 @@ export function Groups() {
                 required
                 className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent"
                 disabled={loading}
+                maxLength={100}
                 placeholder="Choose a memorable name for your group"
               />
             </div>
@@ -1013,6 +1015,7 @@ export function Groups() {
                 rows={4}
                 className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent"
                 disabled={loading}
+                maxLength={500}
                 placeholder="Describe what your group is about and what members can expect..."
               />
             </div>
@@ -1052,16 +1055,16 @@ export function Groups() {
               return (
                 <div
                   key={group.id}
-                  className="bg-white rounded-3xl shadow-xl p-8 hover:shadow-2xl transition-shadow relative"
+                  className="bg-white rounded-3xl shadow-xl p-8 hover:shadow-2xl transition-shadow relative overflow-hidden"
                 >
                   <div className="flex justify-between items-start mb-6">
-                    <div className="flex-1">
-                      <div className="flex items-center space-x-3 mb-4">
-                        <h3 className="text-2xl font-bold text-gray-900 relative">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center space-x-3 mb-4 flex-wrap gap-2">
+                        <h3 className="text-2xl font-bold text-gray-900 relative break-words overflow-x-auto max-w-full min-w-0 flex-1">
                           {group.groupName}
                          
                         </h3>
-                        <div className="flex space-x-2">
+                        <div className="flex space-x-2 flex-shrink-0">
                           {group.isAdmin && (
                             <span className="px-3 py-1 bg-gradient-to-r from-orange-400 to-orange-400 text-white text-sm rounded-full font-medium">
                               Admin
@@ -1084,7 +1087,7 @@ export function Groups() {
                           )}
                         </div>
                       </div>
-                      <p className="text-gray-600 text-lg leading-relaxed mb-4">{group.description}</p>
+                      <p className="text-gray-600 text-lg leading-relaxed mb-4 whitespace-pre-wrap overflow-y-auto max-h-[100px] break-words">{group.description}</p>
                       <div className="flex items-center text-sm text-gray-500 space-x-4">
                         <div className="flex items-center space-x-1">
                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

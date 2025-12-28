@@ -470,6 +470,7 @@ export default function GroupPosts({ groupId, groupName }: GroupPostsProps) {
                 className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 required
                 disabled={loading}
+                maxLength={60}
                 placeholder="What's your post about?"
               />
             </div>
@@ -483,6 +484,7 @@ export default function GroupPosts({ groupId, groupName }: GroupPostsProps) {
                 rows={6}
                 required
                 disabled={loading}
+                maxLength={2000}
                 placeholder="Share your thoughts, ideas, or ask a question..."
               />
             </div>
@@ -542,6 +544,7 @@ export default function GroupPosts({ groupId, groupName }: GroupPostsProps) {
                 onChange={(e) => setNewPost({ ...newPost, categories: e.target.value })}
                 className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 disabled={loading}
+                maxLength={100}
                 placeholder="discussion, announcement, help, question"
               />
               <p className="text-sm text-gray-500 mt-2 flex items-center space-x-1">
@@ -593,7 +596,7 @@ export default function GroupPosts({ groupId, groupName }: GroupPostsProps) {
                     </span>
                   </div>
                   <div>
-                    <h4 className="text-xl font-bold text-gray-900">{post.title}</h4>
+                    <h4 className="text-xl font-bold text-gray-900 break-words overflow-x-auto">{post.title}</h4>
                     <div className="flex items-center space-x-2 text-sm text-gray-500 mt-1">
                       <span className="font-medium">{post.authorUsername}</span>
                       <span>•</span>
@@ -627,7 +630,7 @@ export default function GroupPosts({ groupId, groupName }: GroupPostsProps) {
                   {post.categories.map((category, index) => (
                     <span
                       key={index}
-                      className="px-3 py-1 bg-gradient-to-r from-blue-100 to-cyan-100 text-blue-800 text-sm rounded-full font-medium"
+                      className="px-3 py-1 bg-gradient-to-r from-blue-100 to-cyan-100 text-blue-800 text-sm rounded-full font-medium whitespace-pre-wrap overflow-x-auto max-w-full break-words"
                     >
                       #{category}
                     </span>
@@ -637,7 +640,7 @@ export default function GroupPosts({ groupId, groupName }: GroupPostsProps) {
               
               {/* Post Content */}
               <div className="prose max-w-none mb-6">
-                <p className="text-gray-700 leading-relaxed whitespace-pre-wrap text-lg">
+                <p className="text-gray-700 leading-relaxed whitespace-pre-wrap text-lg overflow-y-auto max-h-[300px] break-words">
                   {post.content}
                 </p>
               </div>
@@ -720,6 +723,7 @@ export default function GroupPosts({ groupId, groupName }: GroupPostsProps) {
                           className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                           rows={3}
                           placeholder="Add a comment..."
+                          maxLength={500}
                         />
                       </div>
                       <button
@@ -734,16 +738,16 @@ export default function GroupPosts({ groupId, groupName }: GroupPostsProps) {
                   {/* Comments List */}
                     <div className="space-y-4 mt-4">
                     {post.comments?.map((comment) => (
-                      <div key={comment.id} className="flex space-x-3 bg-gray-50 p-4 rounded-xl">
+                      <div key={comment.id} className="flex space-x-3 bg-gray-50 p-4 rounded-xl overflow-hidden">
                       <div className="w-8 h-8 bg-gradient-to-r from-green-500 to-blue-500 rounded-full flex-shrink-0 flex items-center justify-center">
                         <span className="text-white text-sm font-bold">
                         {comment.authorUsername.charAt(0).toUpperCase()}
                         </span>
                       </div>
                       
-                      <div className="flex-1">
+                      <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between mb-1">
-                        <span className="font-medium text-gray-900">{comment.authorUsername}</span>
+                        <span className="font-medium text-gray-900 break-words overflow-x-auto">{comment.authorUsername}</span>
                         <div className="flex items-center space-x-2">
                           <span className="text-xs text-gray-500">{new Date(comment.createdAt).toLocaleString()}</span>
                           {currentUserId === comment.authorId && (
@@ -756,7 +760,7 @@ export default function GroupPosts({ groupId, groupName }: GroupPostsProps) {
                           )}
                         </div>
                         </div>
-                        <p className="text-gray-700 whitespace-pre-wrap">{comment.content}</p>
+                        <p className="text-gray-700 whitespace-pre-wrap overflow-y-auto max-h-[150px] break-words">{comment.content}</p>
                       </div>
                       </div>
                     ))}

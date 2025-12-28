@@ -327,7 +327,7 @@ export function PublicProfile({ nickname }: PublicProfileProps) {
           <div className="bg-white rounded-3xl shadow-xl p-8 mb-8">
             <h2 className="text-2xl font-bold text-gray-900 mb-4">About {profile.nickname}</h2>
             <div className="bg-gray-50 rounded-xl p-6">
-              <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">
+              <p className="text-gray-700 leading-relaxed whitespace-pre-wrap overflow-y-auto max-h-[300px] break-words">
                 {profile.about_me}
               </p>
             </div>
@@ -368,8 +368,8 @@ export function PublicProfile({ nickname }: PublicProfileProps) {
                     />
                   )}
                   <div className="p-4">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-2 line-clamp-2">{post.title}</h3>
-                    <p className="text-gray-600 text-sm mb-3 line-clamp-3">{post.content}</p>
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2 break-words overflow-x-auto">{post.title}</h3>
+                    <p className="text-gray-600 text-sm mb-3 whitespace-pre-wrap overflow-y-auto max-h-[150px] break-words">{post.content}</p>
                     
                     {post.category && post.category.length > 0 && (
                       <div className="flex flex-wrap gap-1">

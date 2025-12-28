@@ -182,6 +182,7 @@ export function CreatePost() {
                   onChange={(e) => setTitle(e.target.value)}
                   required
                   disabled={isUploading}
+                  maxLength={60}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-50 disabled:cursor-not-allowed transition-all text-lg"
                 />
                 <div className="flex justify-between text-sm text-gray-500">
@@ -203,6 +204,7 @@ export function CreatePost() {
                   required
                   disabled={isUploading}
                   rows={8}
+                  maxLength={2000}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-50 disabled:cursor-not-allowed transition-all resize-none"
                 />
                 <div className="flex justify-between text-sm text-gray-500">
@@ -224,6 +226,7 @@ export function CreatePost() {
                   onChange={(e) => setCategory(e.target.value)}
                   required
                   disabled={isUploading}
+                  maxLength={100}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-50 disabled:cursor-not-allowed transition-all"
                 />
                 <p className="text-sm text-gray-500">Separate multiple categories with commas</p>

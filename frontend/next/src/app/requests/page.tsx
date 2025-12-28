@@ -270,9 +270,9 @@ export default function RequestsPage() {
 
     const renderGroupRequest = (request: GroupJoinRequest, type: 'requester' | 'admin') => (
         <li key={`group-${request.id}-${type}`}>
-            <div className="p-4 bg-white shadow rounded border">
+            <div className="p-4 bg-white shadow rounded border overflow-hidden">
                 <div className="flex justify-between items-start mb-2">
-                    <h2 className="text-xl font-semibold text-gray-800">
+                    <h2 className="text-xl font-semibold text-gray-800 break-words overflow-x-auto">
                         {type === 'requester' ? 'Your Group Join Request' : 'Group Join Request'}
                     </h2>
                     <span className={`px-2 py-1 text-xs font-medium rounded ${
@@ -284,19 +284,19 @@ export default function RequestsPage() {
                     </span>
                 </div>
                 <div className="mb-3">
-                    <p className="text-gray-700">
+                    <p className="text-gray-700 break-words">
                         {type === 'requester' ? (
-                            <>You requested to join <span className="font-semibold text-purple-700">"{request.groupName}"</span></>
+                            <>You requested to join <span className="font-semibold text-purple-700 break-words overflow-x-auto">"{request.groupName}"</span></>
                         ) : (
-                            <><span className="font-semibold text-blue-700">{request.username}</span> wants to join <span className="font-semibold text-purple-700">"{request.groupName}"</span></>
+                            <><span className="font-semibold text-blue-700 break-words">{request.username}</span> wants to join <span className="font-semibold text-purple-700 break-words overflow-x-auto">"{request.groupName}"</span></>
                         )}
                     </p>
                 </div>
-                <div className="text-sm text-gray-500 mb-4">
+                <div className="text-sm text-gray-500 mb-4 break-words">
                     <span>Date: {new Date(request.createdAt).toLocaleDateString()}</span>
-                    <span className="ml-4">Group: <strong>{request.groupName}</strong></span>
+                    <span className="ml-4">Group: <strong className="break-words overflow-x-auto">{request.groupName}</strong></span>
                     {type === 'admin' && (
-                        <span className="ml-4">Requested by: <strong>{request.username}</strong></span>
+                        <span className="ml-4">Requested by: <strong className="break-words">{request.username}</strong></span>
                     )}
                 </div>
                 
@@ -325,9 +325,9 @@ export default function RequestsPage() {
 
     const renderGroupInvite = (invite: GroupInviteRequest) => (
         <li key={`invite-${invite.id}`}>
-            <div className="p-4 bg-white shadow rounded border">
+            <div className="p-4 bg-white shadow rounded border overflow-hidden">
                 <div className="flex justify-between items-start mb-2">
-                    <h2 className="text-xl font-semibold text-gray-800">Group Invitation</h2>
+                    <h2 className="text-xl font-semibold text-gray-800 break-words">Group Invitation</h2>
                     <span className={`px-2 py-1 text-xs font-medium rounded ${
                         invite.status === 'pending' ? 'bg-blue-100 text-blue-800' :
                         invite.status === 'accepted' ? 'bg-green-100 text-green-800' :
@@ -337,13 +337,13 @@ export default function RequestsPage() {
                     </span>
                 </div>
                 <div className="mb-3">
-                    <p className="text-gray-700">
-                        You have been invited to join <span className="font-semibold text-purple-700">"{invite.groupName}"</span>
+                    <p className="text-gray-700 break-words">
+                        You have been invited to join <span className="font-semibold text-purple-700 break-words overflow-x-auto">"{invite.groupName}"</span>
                     </p>
                 </div>
-                <div className="text-sm text-gray-500 mb-4">
+                <div className="text-sm text-gray-500 mb-4 break-words">
                     <span>Date: {new Date(invite.createdAt).toLocaleDateString()}</span>
-                    <span className="ml-4">Group: <strong>{invite.groupName}</strong></span>
+                    <span className="ml-4">Group: <strong className="break-words overflow-x-auto">{invite.groupName}</strong></span>
                 </div>
                 
                 {/* Show accept/reject buttons only for pending invites */}

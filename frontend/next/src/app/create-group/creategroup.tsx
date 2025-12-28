@@ -212,6 +212,7 @@ export function Groups() {
                 placeholder="Enter username"
                 className="flex-1 border px-4 py-2 rounded-md"
                 disabled={loading}
+                maxLength={50}
               />
               <Button
                 onClick={() => handleAddUser(selectedGroup.id)}
@@ -279,6 +280,7 @@ export function Groups() {
             name="groupName"
             required
             className="w-full border px-4 py-2 rounded-md"
+            maxLength={100}
           />
         </div>
         <div>
@@ -288,6 +290,7 @@ export function Groups() {
             required
             rows={3}
             className="w-full border px-4 py-2 rounded-md"
+            maxLength={500}
           />
         </div>
         <Button type="submit" className="w-full text-white">

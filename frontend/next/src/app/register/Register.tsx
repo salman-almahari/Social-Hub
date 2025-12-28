@@ -372,6 +372,7 @@ export function Register() {
                 value={nickname}
                 onChange={(e) => setNickname(e.target.value)}
                 disabled={isLoading}
+                maxLength={50}
                 className="w-full px-4 py-3 border border-gray-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed transition-all duration-200 hover:border-gray-400"
               />
             </div>
@@ -389,6 +390,7 @@ export function Register() {
                   onChange={(e) => handleFieldChange('firstName', e.target.value)}
                   onBlur={(e) => handleFieldBlur('firstName', e.target.value)}
                   disabled={isLoading}
+                  maxLength={50}
                   className={`w-full px-4 py-3 border rounded-2xl focus:outline-none focus:ring-2 disabled:bg-gray-100 disabled:cursor-not-allowed transition-all duration-200 hover:border-gray-400 ${getInputBorderClass('firstName')}`}
                 />
                 {renderError('firstName')}
@@ -405,6 +407,7 @@ export function Register() {
                   onChange={(e) => handleFieldChange('lastName', e.target.value)}
                   onBlur={(e) => handleFieldBlur('lastName', e.target.value)}
                   disabled={isLoading}
+                  maxLength={50}
                   className={`w-full px-4 py-3 border rounded-2xl focus:outline-none focus:ring-2 disabled:bg-gray-100 disabled:cursor-not-allowed transition-all duration-200 hover:border-gray-400 ${getInputBorderClass('lastName')}`}
                 />
                 {renderError('lastName')}
@@ -468,6 +471,7 @@ export function Register() {
                   onChange={(e) => handleFieldChange('email', e.target.value)}
                   onBlur={(e) => handleFieldBlur('email', e.target.value)}
                   disabled={isLoading}
+                  maxLength={255}
                   className={`w-full pl-12 pr-4 py-3 border rounded-2xl focus:outline-none focus:ring-2 disabled:bg-gray-100 disabled:cursor-not-allowed transition-all duration-200 hover:border-gray-400 ${getInputBorderClass('email')}`}
                 />
               </div>
@@ -488,6 +492,7 @@ export function Register() {
                   onChange={(e) => handleFieldChange('password', e.target.value)}
                   onBlur={(e) => handleFieldBlur('password', e.target.value)}
                   disabled={isLoading}
+                  maxLength={100}
                   className={`w-full pl-12 pr-4 py-3 border rounded-2xl focus:outline-none focus:ring-2 disabled:bg-gray-100 disabled:cursor-not-allowed transition-all duration-200 hover:border-gray-400 ${getInputBorderClass('password')}`}
                 />
               </div>
