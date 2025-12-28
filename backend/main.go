@@ -40,7 +40,7 @@ func main() {
 	http.HandleFunc("/post-permissions/check-access", corsMiddleware(Auth.RequireAuth(handlers.CheckPostAccessHandler)))
 
 	http.HandleFunc("/comments", corsMiddleware(handlers.GetCommentsHandler))
-	http.HandleFunc("/comments/add", corsMiddleware(handlers.InsertCommentHandler))
+	http.HandleFunc("/comments/add", corsMiddleware(Auth.RequireAuth(handlers.InsertCommentHandler)))
 
 	http.HandleFunc("/getUsersHandler", corsMiddleware(handlers.GetAllNicknamesHandler))
 	http.HandleFunc("/profile", corsMiddleware(handlers.UserProfileHandler))

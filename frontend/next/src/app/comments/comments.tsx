@@ -168,6 +168,7 @@ export function CommentsSection() {
         headers: {
           "Content-Type": "application/json",
         },
+        credentials: "include",
         body: JSON.stringify(requestBody),
       });
       

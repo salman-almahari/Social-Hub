@@ -25,6 +25,13 @@ func InsertCommentHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Get user ID from context (set by RequireAuth middleware)
+	userID := getUserIDFromContext(r.Context())
+	if userID == 0 {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+
 	var newComment Comment
 	if err := json.NewDecoder(r.Body).Decode(&newComment); err != nil {
 		http.Error(w, "Invalid JSON data", http.StatusBadRequest)
@@ -32,10 +39,13 @@ func InsertCommentHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Validate required fields
-	if newComment.PostID == 0 || newComment.UserID == 0 || newComment.Content == "" {
-		http.Error(w, "Missing required fields (post_id, user_id, or content)", http.StatusBadRequest)
+	if newComment.PostID == 0 || newComment.Content == "" {
+		http.Error(w, "Missing required fields (post_id or content)", http.StatusBadRequest)
 		return
 	}
+
+	// Use the authenticated user's ID from context, not from request body
+	newComment.UserID = userID
 
 	// Generate timestamp on server side
 	newComment.Time = time.Now().Format("2006-01-02 15:04:05")
