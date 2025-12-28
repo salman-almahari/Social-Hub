@@ -6,7 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"social-network/database"
+	"socialhub/database"
 	"strconv"
 	"time"
 )

@@ -3,7 +3,7 @@ package handlers
 import (
 	"fmt"
 	"net/http"
-	// "social-network/database"
+	// "socialhub/database"
 
 	// "github.com/gorilla/websocket"
 )

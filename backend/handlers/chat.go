@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"social-network/database"
+	"socialhub/database"
 	// "your_project/database" // adjust path as needed
 )
 

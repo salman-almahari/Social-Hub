@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"social-network/database"
-	"social-network/followers"
-	"social-network/handlers"
-	"social-network/sessions"
+	"socialhub/database"
+	"socialhub/followers"
+	"socialhub/handlers"
+	"socialhub/sessions"
 )
 
 func main() {

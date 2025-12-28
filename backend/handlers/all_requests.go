@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"social-network/database"
-	"social-network/sessions"
+	"socialhub/database"
+	"socialhub/sessions"
 )
 
 // AllRequestsResponse represents all types of requests for a user

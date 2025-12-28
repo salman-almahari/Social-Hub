@@ -4,9 +4,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"social-network/database"
-	"social-network/handlers"
-	"social-network/sessions"
+	"socialhub/database"
+	"socialhub/handlers"
+	"socialhub/sessions"
 )
 
 // Import the notification function from main package

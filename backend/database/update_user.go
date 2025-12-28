@@ -2,7 +2,7 @@ package database
 
 import (
 	"fmt"
-	"social-network/models"
+	"socialhub/models"
 )
 
 func UpdateUserProfile(userID int, req models.UpdateProfileRequest) error {

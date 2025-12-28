@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
-	"social-network/database"
+	"socialhub/database"
 )
 
 func GetAllNicknamesHandler(w http.ResponseWriter, r *http.Request) {

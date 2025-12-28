@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"strconv"
 
-	"social-network/database"
+	"socialhub/database"
 )
 
 // GroupNotification represents a group notification record

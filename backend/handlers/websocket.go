@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
-	"social-network/database"
-	"social-network/notify"
+	"socialhub/database"
+	"socialhub/notify"
 	"time"
 
 	"github.com/gorilla/websocket"

@@ -5,8 +5,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"social-network/database"
-	"social-network/sessions"
+	"socialhub/database"
+	"socialhub/sessions"
 	"golang.org/x/crypto/bcrypt"
 )
 

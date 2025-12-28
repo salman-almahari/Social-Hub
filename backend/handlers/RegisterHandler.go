@@ -10,8 +10,8 @@ import (
 	"strings"
 	"time"
 
-	"social-network/database"
-	"social-network/notify"
+	"socialhub/database"
+	"socialhub/notify"
 )
 
 func RegHandler(w http.ResponseWriter, r *http.Request) {

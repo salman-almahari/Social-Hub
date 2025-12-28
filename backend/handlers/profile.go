@@ -4,9 +4,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"social-network/database"
-	"social-network/models"
-	"social-network/sessions"
+	"socialhub/database"
+	"socialhub/models"
+	"socialhub/sessions"
 )
 
 func UserProfileHandler(w http.ResponseWriter, r *http.Request) {

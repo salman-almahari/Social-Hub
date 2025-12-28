@@ -8,7 +8,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
-	"social-network/database"
+	"socialhub/database"
 	"strconv"
 	"strings"
 	"time"

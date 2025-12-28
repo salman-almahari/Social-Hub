@@ -3,7 +3,7 @@ package followers
 import (
 	"database/sql"
 	"fmt"
-	"social-network/handlers"
+	"socialhub/handlers"
 )
 
 var Db *sql.DB

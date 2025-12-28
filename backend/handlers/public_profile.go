@@ -3,8 +3,8 @@ package handlers
 import (
 	"encoding/json"
 	"net/http"
-	"social-network/database"
-	"social-network/sessions"
+	"socialhub/database"
+	"socialhub/sessions"
 	"strings"
 )
 

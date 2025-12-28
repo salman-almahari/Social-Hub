@@ -9,8 +9,8 @@ import (
 	"strings"
 	"time"
 
-	"social-network/database"
-	"social-network/sessions"
+	"socialhub/database"
+	"socialhub/sessions"
 )
 
 const (

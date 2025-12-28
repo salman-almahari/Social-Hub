@@ -4,9 +4,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"social-network/database"
-	"social-network/sessions"
-	// "social-network/database"
+	"socialhub/database"
+	"socialhub/sessions"
+	// "socialhub/database"
 )
 
 func InsertPostHandler(w http.ResponseWriter, r *http.Request) {

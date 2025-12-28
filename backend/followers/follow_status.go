@@ -3,8 +3,8 @@ package followers
 import (
 	"encoding/json"
 	"net/http"
-	"social-network/database"
-	"social-network/sessions"
+	"socialhub/database"
+	"socialhub/sessions"
 )
 
 func FollowStatusHandler(w http.ResponseWriter, r *http.Request) {
